@@ -1,45 +1,27 @@
 package com.research.repository;
 
 import com.research.model.GateLane;
+import com.research.model.LaneStatus;
 
-import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class GateLaneRepository implements BaseRepository<GateLane> {
-    private final Map<Integer, GateLane> storage = new HashMap<>();
+public class GateLaneRepository extends BaseRepository<GateLane> {
 
-    @Override
-    public void save(GateLane entity) {
-        storage.put(entity.getId(), entity);
+    // ---------------- FIND OPEN LANES ----------------
+    public List<GateLane> findOpenLanes() {
+        return storage.values()
+                .stream()
+                .filter(lane -> lane.getStatus() == LaneStatus.OPEN)
+                .collect(Collectors.toList());
     }
 
-    @Override
-    public Optional<GateLane> findById(int id) {
-        return Optional.ofNullable(storage.get(id));
-    }
-
-    @Override
-    public List<GateLane> findAll() {
-        return new ArrayList<>(storage.values());
-    }
-
-    @Override
-    public void update(GateLane entity) {
-        storage.put(entity.getId(), entity);
-    }
-
-    @Override
-    public void deleteById(int id) {
-        storage.remove(id);
-    }
-
-    @Override
-    public boolean existsById(int id) {
-        return storage.containsKey(id);
-    }
-
-    public Optional<GateLane> findByLaneNumber(int laneNumber) {
-        return storage.values().stream()
+    // ---------------- FIND BY LANE NUMBER ----------------
+    public GateLane findByLaneNumber(int laneNumber) {
+        return storage.values()
+                .stream()
                 .filter(lane -> lane.getLaneNumber() == laneNumber)
-                .findFirst();
+                .findFirst()
+                .orElse(null);
     }
 }

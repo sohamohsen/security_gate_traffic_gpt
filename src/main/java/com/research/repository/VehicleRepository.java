@@ -2,49 +2,36 @@ package com.research.repository;
 
 import com.research.model.Vehicle;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-public class VehicleRepository implements BaseRepository<Vehicle> {
-    private final Map<Integer, Vehicle> storage = new HashMap<>();
+public class VehicleRepository extends BaseRepository<Vehicle> {
 
-    @Override
-    public void save(Vehicle entity) {
-        storage.put(entity.getId(), entity);
-    }
-
-    @Override
-    public Optional<Vehicle> findById(int id) {
-        return Optional.ofNullable(storage.get(id));
-    }
-
-    @Override
-    public List<Vehicle> findAll() {
-        return new ArrayList<>(storage.values());
-    }
-
-    @Override
-    public void update(Vehicle entity) {
-        storage.put(entity.getId(), entity);
-    }
-
-    @Override
-    public void deleteById(int id) {
-        storage.remove(id);
-    }
-
-    @Override
-    public boolean existsById(int id) {
-        return storage.containsKey(id);
-    }
-
+    // ---------------- FIND BY PLATE NUMBER ----------------
     public Optional<Vehicle> findByPlateNumber(String plateNumber) {
-        return storage.values().stream()
-                .filter(vehicle -> vehicle.getPlateNumber().equalsIgnoreCase(plateNumber))
+        return storage.values()
+                .stream()
+                .filter(vehicle ->
+                        vehicle.getPlateNumber().equalsIgnoreCase(plateNumber))
                 .findFirst();
     }
 
+    // ---------------- CHECK PLATE EXISTS ----------------
     public boolean existsByPlateNumber(String plateNumber) {
-        return storage.values().stream()
-                .anyMatch(vehicle -> vehicle.getPlateNumber().equalsIgnoreCase(plateNumber));
+        return storage.values()
+                .stream()
+                .anyMatch(vehicle ->
+                        vehicle.getPlateNumber().equalsIgnoreCase(plateNumber));
+    }
+
+    // ---------------- SEARCH BY OWNER ID ----------------
+    public List<Vehicle> findByOwnerId(int ownerId) {
+        return storage.values()
+                .stream()
+                .filter(vehicle ->
+                        vehicle.getOwner() != null &&
+                                vehicle.getOwner().getId() == ownerId)
+                .collect(Collectors.toList());
     }
 }

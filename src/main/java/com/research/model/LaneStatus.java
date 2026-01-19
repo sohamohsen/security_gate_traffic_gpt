@@ -1,6 +1,6 @@
 package com.research.model;
 
-public enum GateLaneStatus {
+public enum LaneStatus {
     OPEN,
     CLOSED,
     BUSY

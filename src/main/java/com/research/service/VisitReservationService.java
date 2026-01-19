@@ -8,37 +8,35 @@ import java.time.LocalTime;
 import java.util.List;
 
 public class VisitReservationService {
-    private final VisitReservationRepository visitReservationRepository;
 
-    public VisitReservationService(VisitReservationRepository visitReservationRepository) {
-        this.visitReservationRepository = visitReservationRepository;
+    private final VisitReservationRepository reservationRepository;
+    private final ValidationService validationService;
+
+    public VisitReservationService(VisitReservationRepository reservationRepository,
+                                   ValidationService validationService) {
+        this.reservationRepository = reservationRepository;
+        this.validationService = validationService;
     }
 
     public void createReservation(VisitReservation reservation) {
-        ValidationService.validateNotNull(reservation, "VisitReservation is required.");
-        ValidationService.assertUnique(visitReservationRepository.existsById(reservation.getId()), "Reservation ID already exists.");
-        ValidationService.assertUnique(visitReservationRepository.findByVehiclePlate(reservation.getVehiclePlate()).isPresent(),
-                "Reservation exists for this vehicle plate.");
-        visitReservationRepository.save(reservation);
+        validationService.validateId(reservation.getId());
+        validationService.validateRequiredString(reservation.getVehiclePlate(), "Vehicle Plate");
+
+        reservationRepository.add(reservation);
     }
 
-    public List<VisitReservation> getAllReservations() {
-        return visitReservationRepository.findAll();
-    }
-
-    public void cancelReservation(int id) {
-        ValidationService.assertTrue(visitReservationRepository.existsById(id), "Reservation does not exist.");
-        visitReservationRepository.deleteById(id);
-    }
-
-    public boolean validateVisitorAccess(String plate, LocalDate date, LocalTime time) {
-        return visitReservationRepository.findByVehiclePlate(plate)
-                .filter(res -> res.getVisitDate().equals(date) && isWithinTimeWindow(res.getVisitTime(), time))
+    public boolean validateVisitorAccess(String plateNumber) {
+        return reservationRepository.findByVehiclePlate(plateNumber)
+                .filter(r -> r.getVisitDate().equals(LocalDate.now()))
+                .filter(r -> !LocalTime.now().isBefore(r.getVisitTime()))
                 .isPresent();
     }
 
-    // Helper: assume 1 hour time window before/after reservation
-    private boolean isWithinTimeWindow(LocalTime reserved, LocalTime actual) {
-        return !actual.isBefore(reserved.minusHours(1)) && !actual.isAfter(reserved.plusHours(1));
+    public List<VisitReservation> getAllReservations() {
+        return List.copyOf(reservationRepository.getAll());
+    }
+
+    public void cancelReservation(int id) {
+        reservationRepository.delete(id);
     }
 }

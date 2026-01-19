@@ -1,55 +1,42 @@
 package com.research.service;
 
-import com.research.exception.NotFoundException;
 import com.research.model.GateLane;
-import com.research.model.GateLaneStatus;
+import com.research.model.LaneStatus;
 import com.research.repository.GateLaneRepository;
 
 import java.util.List;
 
 public class GateLaneService {
-    private final GateLaneRepository gateLaneRepository;
 
-    public GateLaneService(GateLaneRepository gateLaneRepository) {
+    private final GateLaneRepository gateLaneRepository;
+    private final ValidationService validationService;
+
+    public GateLaneService(GateLaneRepository gateLaneRepository,
+                           ValidationService validationService) {
         this.gateLaneRepository = gateLaneRepository;
+        this.validationService = validationService;
     }
 
     public void addLane(GateLane lane) {
-        ValidationService.validateNotNull(lane, "Lane is required.");
-        ValidationService.assertUnique(gateLaneRepository.existsById(lane.getId()), "Lane ID already exists.");
-        gateLaneRepository.save(lane);
+        validationService.validateId(lane.getId());
+        validationService.validatePositiveNumber(lane.getCapacityPerMinute(), "Lane Capacity");
+
+        gateLaneRepository.add(lane);
     }
 
-    public List<GateLane> getAllLanes() {
-        return gateLaneRepository.findAll();
-    }
-
-    public GateLane getLaneById(int id) {
-        return gateLaneRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Lane not found: " + id));
-    }
-
-    public void updateLane(GateLane lane) {
-        ValidationService.validateNotNull(lane, "Lane is required.");
-        ValidationService.assertTrue(gateLaneRepository.existsById(lane.getId()), "Lane does not exist.");
+    public void openLane(int laneId) {
+        GateLane lane = gateLaneRepository.getById(laneId);
+        lane.setStatus(LaneStatus.OPEN);
         gateLaneRepository.update(lane);
     }
 
-    public void openLane(int id) {
-        GateLane lane = getLaneById(id);
-        lane.setStatus(GateLaneStatus.OPEN);
-        gateLaneRepository.update(lane);
-    }
-
-    public void closeLane(int id) {
-        GateLane lane = getLaneById(id);
-        lane.setStatus(GateLaneStatus.CLOSED);
+    public void closeLane(int laneId) {
+        GateLane lane = gateLaneRepository.getById(laneId);
+        lane.setStatus(LaneStatus.CLOSED);
         gateLaneRepository.update(lane);
     }
 
     public List<GateLane> getOpenLanes() {
-        return gateLaneRepository.findAll().stream()
-                .filter(l -> l.getStatus() == GateLaneStatus.OPEN)
-                .toList();
+        return gateLaneRepository.findOpenLanes();
     }
 }

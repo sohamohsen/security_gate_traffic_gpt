@@ -1,43 +1,64 @@
 package com.research.service;
 
 import com.research.exception.BusinessRuleViolationException;
-import com.research.exception.DuplicateIdException;
-import com.research.exception.InputMismatchException;
-import com.research.exception.MyNullPointerException;
 
-/**
- * Reusable validation utility for various business and input rules.
- * Keeps services clean and DRY.
- */
 public class ValidationService {
 
-    public static void validateNotNull(Object obj, String message) {
-        if (obj == null) {
-            throw new MyNullPointerException(message);
+    // ---------------- BASIC STRING VALIDATION ----------------
+    public void validateRequiredString(String value, String fieldName) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new BusinessRuleViolationException(
+                    fieldName + " must not be empty."
+            );
         }
     }
 
-    public static void validateStringNotEmpty(String str, String message) {
-        if (str == null || str.isEmpty()) {
-            throw new InputMismatchException(message);
+    // ---------------- EMAIL VALIDATION ----------------
+    public void validateEmail(String email) {
+        validateRequiredString(email, "Email");
+
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            throw new BusinessRuleViolationException(
+                    "Invalid email format."
+            );
         }
     }
 
-    public static void validatePositive(int value, String message) {
+    // ---------------- PHONE VALIDATION ----------------
+    public void validatePhone(String phone) {
+        validateRequiredString(phone, "Phone number");
+
+        if (!phone.matches("^\\+?[0-9]{10,15}$")) {
+            throw new BusinessRuleViolationException(
+                    "Invalid phone number format."
+            );
+        }
+    }
+
+    // ---------------- POSITIVE ID VALIDATION ----------------
+    public void validateId(int id) {
+        if (id <= 0) {
+            throw new BusinessRuleViolationException(
+                    "ID must be a positive number."
+            );
+        }
+    }
+
+    // ---------------- POSITIVE NUMBER VALIDATION ----------------
+    public void validatePositiveNumber(int value, String fieldName) {
         if (value <= 0) {
-            throw new InputMismatchException(message);
+            throw new BusinessRuleViolationException(
+                    fieldName + " must be greater than zero."
+            );
         }
     }
 
-    public static void assertTrue(boolean condition, String message) {
-        if (!condition) {
-            throw new BusinessRuleViolationException(message);
-        }
-    }
-
-    public static void assertUnique(boolean alreadyExists, String message) {
-        if (alreadyExists) {
-            throw new DuplicateIdException(message);
+    // ---------------- OBJECT NOT NULL ----------------
+    public void validateNotNull(Object obj, String fieldName) {
+        if (obj == null) {
+            throw new BusinessRuleViolationException(
+                    fieldName + " must not be null."
+            );
         }
     }
 }

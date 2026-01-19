@@ -1,17 +1,48 @@
 package com.research;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-public class Main {
-    public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
+import com.research.repository.*;
+import com.research.service.*;
+import com.research.ui.MainMenu;
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
-        }
+public class Main {
+
+    public static void main(String[] args) {
+
+        // ---------------- REPOSITORIES ----------------
+        ResidentRepository residentRepository = new ResidentRepository();
+        VehicleRepository vehicleRepository = new VehicleRepository();
+        GateLaneRepository gateLaneRepository = new GateLaneRepository();
+        GatePassRepository gatePassRepository = new GatePassRepository();
+        VisitReservationRepository visitReservationRepository = new VisitReservationRepository();
+
+        // ---------------- SHARED SERVICES ----------------
+        ValidationService validationService = new ValidationService();
+
+        // ---------------- BUSINESS SERVICES ----------------
+        ResidentService residentService =
+                new ResidentService(residentRepository, validationService);
+
+        VehicleService vehicleService =
+                new VehicleService(vehicleRepository, validationService);
+
+        GateLaneService gateLaneService =
+                new GateLaneService(gateLaneRepository, validationService);
+
+        VisitReservationService visitReservationService =
+                new VisitReservationService(visitReservationRepository, validationService);
+
+        GatePassService gatePassService =
+                new GatePassService(gatePassRepository, gateLaneRepository);
+
+        // ---------------- START UI ----------------
+        MainMenu mainMenu = new MainMenu(
+                residentService,
+                vehicleService,
+                gateLaneService,
+                gatePassService,
+                visitReservationService
+        );
+
+        mainMenu.start();
     }
 }

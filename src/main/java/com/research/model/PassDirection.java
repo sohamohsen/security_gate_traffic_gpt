@@ -1,6 +1,6 @@
 package com.research.model;
 
-public enum GatePassDirection {
+public enum PassDirection {
     ENTRY,
     EXIT
 }

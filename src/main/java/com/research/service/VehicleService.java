@@ -1,52 +1,44 @@
 package com.research.service;
 
-import com.research.exception.NotFoundException;
+import com.research.exception.BusinessRuleViolationException;
 import com.research.model.Vehicle;
 import com.research.repository.VehicleRepository;
 
 import java.util.List;
 
 public class VehicleService {
-    private final VehicleRepository vehicleRepository;
 
-    public VehicleService(VehicleRepository vehicleRepository) {
+    private final VehicleRepository vehicleRepository;
+    private final ValidationService validationService;
+
+    public VehicleService(VehicleRepository vehicleRepository,
+                          ValidationService validationService) {
         this.vehicleRepository = vehicleRepository;
+        this.validationService = validationService;
     }
 
     public void registerVehicle(Vehicle vehicle) {
-        ValidationService.validateNotNull(vehicle, "Vehicle is required.");
-        ValidationService.assertUnique(vehicleRepository.existsById(vehicle.getId()),
-                "Vehicle ID already exists.");
-        ValidationService.assertUnique(vehicleRepository.existsByPlateNumber(vehicle.getPlateNumber()),
-                "Duplicate plate number not allowed.");
-        vehicleRepository.save(vehicle);
-    }
+        validationService.validateId(vehicle.getId());
+        validationService.validateRequiredString(vehicle.getPlateNumber(), "Plate Number");
+        validationService.validateNotNull(vehicle.getOwner(), "Vehicle Owner");
+        validationService.validateNotNull(vehicle.getVehicleType(), "Vehicle Type");
 
-    public List<Vehicle> getAllVehicles() {
-        return vehicleRepository.findAll();
+        if (vehicleRepository.existsByPlateNumber(vehicle.getPlateNumber())) {
+            throw new BusinessRuleViolationException("Duplicate plate number not allowed.");
+        }
+
+        vehicleRepository.add(vehicle);
     }
 
     public Vehicle getVehicleById(int id) {
-        return vehicleRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Vehicle not found with ID: " + id));
+        return vehicleRepository.getById(id);
     }
 
-    public void updateVehicle(Vehicle vehicle) {
-        ValidationService.validateNotNull(vehicle, "Vehicle is required.");
-        ValidationService.assertTrue(vehicleRepository.existsById(vehicle.getId()),
-                "Vehicle ID does not exist.");
-        vehicleRepository.update(vehicle);
+    public List<Vehicle> getAllVehicles() {
+        return List.copyOf(vehicleRepository.getAll());
     }
 
     public void deleteVehicle(int id) {
-        ValidationService.assertTrue(vehicleRepository.existsById(id),
-                "Vehicle ID does not exist.");
-        vehicleRepository.deleteById(id);
-    }
-
-    public Vehicle searchByPlateNumber(String plate) {
-        ValidationService.validateStringNotEmpty(plate, "Plate number required.");
-        return vehicleRepository.findByPlateNumber(plate)
-                .orElseThrow(() -> new NotFoundException("Vehicle not found with plate: " + plate));
+        vehicleRepository.delete(id);
     }
 }

@@ -1,52 +1,49 @@
 package com.research.service;
 
-import com.research.exception.NotFoundException;
+import com.research.exception.DuplicateIdException;
 import com.research.model.Resident;
 import com.research.repository.ResidentRepository;
 
 import java.util.List;
 
 public class ResidentService {
-    private final ResidentRepository residentRepository;
 
-    public ResidentService(ResidentRepository residentRepository) {
+    private final ResidentRepository residentRepository;
+    private final ValidationService validationService;
+
+    public ResidentService(ResidentRepository residentRepository,
+                           ValidationService validationService) {
         this.residentRepository = residentRepository;
+        this.validationService = validationService;
     }
 
     public void addResident(Resident resident) {
-        ValidationService.validateNotNull(resident, "Resident data is required.");
-        ValidationService.assertUnique(residentRepository.existsById(resident.getId()),
-                "Resident ID already exists.");
-        ValidationService.assertUnique(residentRepository.findByEmail(resident.getEmail()).isPresent(),
-                "Resident email already exists.");
-        residentRepository.save(resident);
-    }
+        validationService.validateId(resident.getId());
+        validationService.validateRequiredString(resident.getFullName(), "Full Name");
+        validationService.validateEmail(resident.getEmail());
+        validationService.validatePhone(resident.getPhone());
+        validationService.validateRequiredString(resident.getUnitNumber(), "Unit Number");
 
-    public List<Resident> getAllResidents() {
-        return residentRepository.findAll();
+        if (residentRepository.findByEmail(resident.getEmail()).isPresent()) {
+            throw new DuplicateIdException("Resident with this email already exists.");
+        }
+
+        residentRepository.add(resident);
     }
 
     public Resident getResidentById(int id) {
-        return residentRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Resident not found with ID: " + id));
+        return residentRepository.getById(id);
+    }
+
+    public List<Resident> getAllResidents() {
+        return List.copyOf(residentRepository.getAll());
     }
 
     public void updateResident(Resident resident) {
-        ValidationService.validateNotNull(resident, "Resident data is required.");
-        ValidationService.assertTrue(residentRepository.existsById(resident.getId()),
-                "Resident ID does not exist.");
         residentRepository.update(resident);
     }
 
     public void deleteResident(int id) {
-        ValidationService.assertTrue(residentRepository.existsById(id),
-                "Resident ID does not exist.");
-        residentRepository.deleteById(id);
-    }
-
-    public Resident searchResidentByEmail(String email) {
-        ValidationService.validateStringNotEmpty(email, "Email cannot be empty.");
-        return residentRepository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("Resident not found with email: " + email));
+        residentRepository.delete(id);
     }
 }

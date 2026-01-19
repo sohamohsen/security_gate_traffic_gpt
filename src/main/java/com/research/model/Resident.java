@@ -1,6 +1,8 @@
 package com.research.model;
 
-public class Resident {
+import com.research.repository.Identifiable;
+
+public class Resident implements Identifiable {
     private final int id;
     private String fullName;
     private String email;
@@ -15,9 +17,6 @@ public class Resident {
         this.unitNumber = unitNumber;
     }
 
-    public int getId() {
-        return id;
-    }
 
     public String getFullName() {
         return fullName;
@@ -49,5 +48,10 @@ public class Resident {
 
     public void setUnitNumber(String unitNumber) {
         this.unitNumber = unitNumber;
+    }
+
+    @Override
+    public int getId() {
+        return id;
     }
 }

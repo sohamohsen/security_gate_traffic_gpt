@@ -1,6 +1,6 @@
 package com.research.model;
 
-public enum GatePassStatus {
+public enum PassStatus {
     PENDING,
     APPROVED,
     DENIED,

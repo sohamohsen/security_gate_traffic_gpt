@@ -1,7 +1,10 @@
 package com.research.model;
 
-public class VehicleType {
-    private final int id;
+import com.research.repository.Identifiable;
+
+public class VehicleType implements Identifiable {
+
+    private int id;
     private String name;
     private String description;
 
@@ -11,23 +14,11 @@ public class VehicleType {
         this.description = description;
     }
 
+    @Override
     public int getId() {
         return id;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public String getName() { return name; }
+    public String getDescription() { return description; }
 }

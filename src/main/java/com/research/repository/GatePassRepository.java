@@ -1,39 +1,38 @@
 package com.research.repository;
 
+
 import com.research.model.GatePass;
+import com.research.model.PassDirection;
+import com.research.model.PassStatus;
 
-import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class GatePassRepository implements BaseRepository<GatePass> {
-    private final Map<Integer, GatePass> storage = new HashMap<>();
+public class GatePassRepository extends BaseRepository<GatePass> {
 
-    @Override
-    public void save(GatePass entity) {
-        storage.put(entity.getId(), entity);
+    // ---------------- FIND BY STATUS ----------------
+    public List<GatePass> findByStatus(PassStatus status) {
+        return storage.values()
+                .stream()
+                .filter(pass -> pass.getStatus() == status)
+                .collect(Collectors.toList());
     }
 
-    @Override
-    public Optional<GatePass> findById(int id) {
-        return Optional.ofNullable(storage.get(id));
+    // ---------------- FIND BY DIRECTION ----------------
+    public List<GatePass> findByDirection(PassDirection direction) {
+        return storage.values()
+                .stream()
+                .filter(pass -> pass.getDirection() == direction)
+                .collect(Collectors.toList());
     }
 
-    @Override
-    public List<GatePass> findAll() {
-        return new ArrayList<>(storage.values());
-    }
-
-    @Override
-    public void update(GatePass entity) {
-        storage.put(entity.getId(), entity);
-    }
-
-    @Override
-    public void deleteById(int id) {
-        storage.remove(id);
-    }
-
-    @Override
-    public boolean existsById(int id) {
-        return storage.containsKey(id);
+    // ---------------- FIND BY LANE ID ----------------
+    public List<GatePass> findByLaneId(int laneId) {
+        return storage.values()
+                .stream()
+                .filter(pass ->
+                        pass.getLane() != null &&
+                                pass.getLane().getId() == laneId)
+                .collect(Collectors.toList());
     }
 }

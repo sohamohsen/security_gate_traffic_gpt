@@ -1,14 +1,16 @@
 package com.research.model;
 
+import com.research.repository.Identifiable;
 
-public class Vehicle {
-    private final int id;
+public class Vehicle implements Identifiable {
+
+    private int id;
     private String plateNumber;
     private Resident owner;
-    private compoundgatetraffic.model.VehicleType vehicleType;
+    private VehicleType vehicleType;
     private boolean isAllowed;
 
-    public Vehicle(int id, String plateNumber, Resident owner, compoundgatetraffic.model.VehicleType vehicleType, boolean isAllowed) {
+    public Vehicle(int id, String plateNumber, Resident owner, VehicleType vehicleType, boolean isAllowed) {
         this.id = id;
         this.plateNumber = plateNumber;
         this.owner = owner;
@@ -16,39 +18,16 @@ public class Vehicle {
         this.isAllowed = isAllowed;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public String getPlateNumber() {
-        return plateNumber;
-    }
-
-    public Resident getOwner() {
-        return owner;
-    }
-
-    public compoundgatetraffic.model.VehicleType getVehicleType() {
-        return vehicleType;
-    }
-
-    public boolean isAllowed() {
-        return isAllowed;
-    }
-
-    public void setPlateNumber(String plateNumber) {
-        this.plateNumber = plateNumber;
-    }
-
-    public void setOwner(Resident owner) {
-        this.owner = owner;
-    }
-
-    public void setVehicleType(compoundgatetraffic.model.VehicleType vehicleType) {
-        this.vehicleType = vehicleType;
-    }
+    public String getPlateNumber() { return plateNumber; }
+    public Resident getOwner() { return owner; }
+    public VehicleType getVehicleType() { return vehicleType; }
+    public boolean isAllowed() { return isAllowed; }
 
     public void setAllowed(boolean allowed) {
         isAllowed = allowed;
+    }
+    @Override
+    public int getId() {
+        return id;
     }
 }
